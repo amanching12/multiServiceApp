@@ -1,0 +1,35 @@
+version: '3.7'
+
+services:
+  api:
+    build:
+      context: ./services/api/WeatherApi
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"  # Expose port 8080 on host and map to container port 80 in the container
+    depends_on:
+      - db
+      - cache
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development 
+      - "DatabaseConfig__DBConnectionString=mongodb://multiServiceAppMongo:27017"
+      - "CacheConfig__CacheConnectionString=multiServiceAppRedis:6379"
+
+  db:
+    image: mongo:latest
+    container_name: multiServiceAppMongo
+    restart: always
+    volumes:
+      - mongo-data:/data/db  # Persistent storage for MongoDB
+    ports:
+      - "27017:27017"  # Expose MongoDB port 27017
+
+  cache:
+    image: redis:alpine
+    container_name: multiServiceAppRedis
+    restart: always
+    ports:
+      - "6379:6379"  # Expose Redis port 6379
+
+volumes:
+  mongo-data:
